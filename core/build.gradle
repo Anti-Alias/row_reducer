@@ -1,0 +1,18 @@
+junitPlatform {
+    filters {
+        engines {
+            include 'spek'
+        }
+    }
+    details 'flat'
+}
+
+dependencies {
+    testCompile "org.jetbrains.spek:spek-api:$spek_version"
+    testRuntime "org.jetbrains.spek:spek-junit-platform-engine:$spek_version"
+    testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+    testRuntime ('org.jetbrains.spek:spek-junit-platform-engine:1.1.5') {
+        exclude group: 'org.junit.platform'
+        exclude group: 'org.jetbrains.kotlin'
+    }
+}
