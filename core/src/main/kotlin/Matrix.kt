@@ -1,9 +1,11 @@
+import java.io.PrintStream
+
 /**
  * Immutable row x column Matrix class.
  * @property rows Number of rows in Matrix.
  * @property columns Number of columns in Matrix.
  */
-data class Matrix private constructor (
+class Matrix private constructor (
     val rows:Int,
     val columns:Int,
     private val ratios: Array<Ratio>
@@ -19,9 +21,9 @@ data class Matrix private constructor (
     /**
      * Swaps two elements
      */
-    fun swap(vararg swaps: Pair<Int, Int>):Matrix {
+    fun swap(rowA:Int, rowB:Int):Matrix {
         val m = this.copy()
-        swaps.forEach { m.mutSwap(it.first, it.second) }
+         m.mutSwap(rowA, rowB)
         return m
     }
 
@@ -34,6 +36,7 @@ data class Matrix private constructor (
         m.mutTimes(scalar)
         return m
     }
+
 
     /**
      * Divides this Matrix by a scalar
@@ -60,6 +63,37 @@ data class Matrix private constructor (
         return m
     }
 
+
+    /**
+     * @return Matrix sorted by column of leading coefficent.
+     * @param log Optional log of transformations being made.
+     */
+    fun sorted(log: TransformationLog? = null):Matrix {
+        val m = this.copy()
+        m.mutSortRows(log)
+        return m
+    }
+
+
+    /**
+     * Gets the column of the leading coefficient.
+     * -1 if all zeroes.
+     */
+    fun leadingCoefficientColumn(row:Int):Int {
+        for(column in 0 until columns) {
+            if(get(row, column) != Ratio.ZERO)
+                return column
+        }
+        return -1
+    }
+
+    /**
+     * Creates a Copy of this Matrix.
+     */
+    fun copy(rows:Int = this.rows, columns:Int = this.columns, ratios: Array<Ratio> = this.ratios.copyOf()):Matrix {
+        return Matrix(rows, columns, ratios)
+    }
+
     /**
      * String representation of this Matrix
      */
@@ -69,7 +103,7 @@ data class Matrix private constructor (
         val strRatios: List<String> = ratios.map { it.toString() }
 
         // Calculates longest string representation
-        var longest: Int = 0
+        var longest = 0
         for (ratio in strRatios) {
             val len: Int = ratio.toString().length
             if (len > longest)
@@ -82,7 +116,6 @@ data class Matrix private constructor (
             for (column in 0 until columns) {
                 val ratio = get(row, column)
                 builder.append(ratio.toString().padStart(longest + 1))
-                builder.append(',')
             }
             builder.append('\n')
         }
@@ -167,6 +200,47 @@ data class Matrix private constructor (
             val index = row * columns + column
             val ratio = ratios[index]
             ratios[index] = ratio.simplified()
+        }
+    }
+
+    private fun mutSortRows(log: TransformationLog?) {
+
+        var madeSwap:Boolean
+        do {
+
+            // Initializes swap var
+            madeSwap = false
+
+            // Bubble sorts rows based on earliest leading coefficient
+            for (row in 0 until rows - 1) {
+                val leadingA: Int = leadingCoefficientColumn(row)
+                val leadingB: Int = leadingCoefficientColumn(row + 1)
+                if (leadingB < leadingA) {
+                    mutSwap(row, row + 1)
+                    madeSwap = true
+                    log?.add(Swap(row, row + 1), this.copy())
+                }
+            }
+        }
+        while(madeSwap)
+    }
+
+    private fun mutReduceRowEchelon(log: TransformationLog?) {
+
+        mutSortRows(log)
+
+    }
+
+
+    // Checks if this Matrix can be reduced to echelon form.
+    // Assuems that it is sorted
+    private fun checkReduceable() {
+        for(row in 0 until rows) {
+            for(col in 0 until columns) {
+                val ratio = get(row, col)
+                if(ratio == Ratio.ZERO)
+                    throw RuntimeException("Could not ")
+            }
         }
     }
 

@@ -75,7 +75,7 @@ class MatrixSwapTest : Spek({
                 4/7 8   -3  2/3
                 1   2   3   4
                 5   6/3 -8  12
-            """).swap(0 to 2, 1 to 3)
+            """).swap(0, 2).swap(1, 3)
             assertEquals(expected, actual)
         }
     }
@@ -122,6 +122,31 @@ class MatrixScaleTest : Spek({
             .scaleRow(0, Ratio(2))
             .scaleRow(1, Ratio(3))
             .scaleRow(2, Ratio(-4, 3))
+            assertEquals(expected, actual)
+        }
+    }
+})
+
+class MatrixSortTest : Spek({
+    given("a simple matrix") {
+        val expected = Matrix.parse(4, 4, """
+            3  0  0  8
+            0  -7 0  9
+            0  0  1  3
+            0  0  0  3
+        """)
+
+        it("should equal a sorted matrix") {
+            val starting = Matrix.parse(3, 4, """
+                1  -2 3  7
+                2  1  1  4
+                -3 2  2  -10
+            """)
+            val log = TransformationLog(starting)
+
+            val actual:Matrix = starting.sorted(log)
+
+            println(log)
             assertEquals(expected, actual)
         }
     }
